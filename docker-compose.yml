@@ -1,0 +1,12 @@
+---
+version: '3'
+services:
+  lcms-adapter:
+    image: lcms-adapter
+    # depends_on:
+    #   - broker
+    #   - schema_registry
+    environment:
+      KAFKA_HOST: broker:9092
+      SCHEMA_REGISTRY: http://schema_registry:3502
+

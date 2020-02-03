@@ -1,0 +1,63 @@
+{
+  "debugMode": true,
+  "refreshTime": 0,
+  "lcms": {
+    "username": "USER",
+    "server": "http://localhost:3000/api",
+    "consumeDisciplines": [
+      "SITUATIEBEELD"
+    ]
+  },
+  "testbed": {
+    "_sslOptions": {
+      "pfx": "certs/other-tool-1-client.p12",
+      "pfx": "certs/LCMS.p12",
+      "passphrase": "changeit",
+      "ca": "certs/test-ca.pem",
+      "rejectUnauthorized": true
+    }
+  },
+  "kafka": {
+    "testbedOptions": {
+      "kafkaHost": "driver-testbed.eu:3501",
+      "schemaRegistry": "http://driver-testbed.eu:3502",
+      "kafkaHost": "localhost:3501",
+      "schemaRegistry": "http://localhost:3502",
+      "fetchAllSchemas": false,
+      "fetchAllVersions": false,
+      "ignoreTimeTopic": true,
+      "wrapUnions": "auto",
+      "clientId": "lcms",
+      "consume": [
+        {
+          "topic": "standard_cap",
+          "offset": 0
+        }
+      ],
+      "produce": [
+        "standard_cap",
+        "system_timing",
+        "system_topic_access_invite"
+      ],
+      "_produce": [
+        "lcms_plots"
+      ],
+      "fromOffset": false,
+      "autoRegisterDefaultSchemas": true,
+      "autoRegisterSchemas": false,
+      "schemaFolder": "./src/schemas",
+      "logging": {
+        "logToConsole": 2,
+        "logToFile": 1,
+        "logToKafka": 3,
+        "logFile": "log.txt"
+      }
+    },
+    "logTopic": "lcms_plots",
+    "capTopic": "standard_cap"
+  },
+  "folder": {
+    "data": "data",
+    "images": "images"
+  }
+}

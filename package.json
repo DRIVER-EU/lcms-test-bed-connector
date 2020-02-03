@@ -1,0 +1,45 @@
+{
+  "name": "lcms-test-bed-adapter",
+  "version": "0.0.1",
+  "description": "NodeJS server tool to connect the DRIVER+ Test-Bed to the LCMS (Landelijk Crisis Management Systeem) through the LCMS-API.",
+  "main": "dist/run.js",
+  "typings": "dist/run.d.ts",
+  "scripts": {
+    "start": "node dist/run.js",
+    "build": "tsc",
+    "build:docker": "docker build -t lcms-test-bed-adapter .",
+    "docker:tag": "docker tag lcms-test-bed-adapter drivereu/lcms-test-bed-adapter",
+    "docker:publish": "docker push drivereu/lcms-test-bed-adapter"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DRIVER-EU/lcms-test-bed-adapter.git"
+  },
+  "keywords": [
+    "kafka",
+    "kafka-node",
+    "driver+",
+    "test-bed",
+    "crisis",
+    "management"
+  ],
+  "author": "Rinze Bruining <rinze.bruining@tno.nl> (http://www.tno.nl)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/DRIVER-EU/lcms-test-bed-adapter/issues"
+  },
+  "homepage": "https://github.com/DRIVER-EU/lcms-test-bed-adapter#readme",
+  "dependencies": {
+    "axios": "^0.19.2",
+    "command-line-args": "^5.1.1",
+    "dotenv": "^8.2.0",
+    "jsonwebtoken": "^8.5.1",
+    "node-test-bed-adapter": "^0.8.10",
+    "yn": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/geojson": "^7946.0.7",
+    "@types/node": "^13.7.0",
+    "typescript": "3.7.5"
+  }
+}
