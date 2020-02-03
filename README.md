@@ -16,13 +16,5 @@ npm run build
 You can start them in two terminals, or one after the other.
 
 ```bash
-npm run producer # To produce some CAP messages. Use CTRL-C to stop it.
-npm run consumer # To consume these CAP messages. Use CTRL-C to stop it.
-npm run silent-producer # To create some topics. Use CTRL-C to stop it.
-```
-
-## Develop
-
-```bash
-npm start
+npm run start # To start the connector. Use CTRL-C to stop it.
 ```
