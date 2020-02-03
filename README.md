@@ -1,4 +1,4 @@
-# LCMS Adapter
+# LCMS Test-Bed Connector
 
 NodeJS server tool to connect the DRIVER+ Test-Bed to the LCMS (Landelijk Crisis Management Systeem) through the LCMS-API. 
 
