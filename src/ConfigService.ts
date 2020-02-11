@@ -16,7 +16,9 @@ export class ConfigService {
         TOKEN_REFRESH: '/auth/refresh-token',
         PROFILES: '/profiles',
         ACTIVITIES: '/activities',
-        VIEWS: '/activities/{activityUuid}/views'
+        VIEWS: '/activities/{activityUuid}/views',
+        FIELDS: '/activities/{activityUuid}/views/{viewUuid}/fields',
+        FIELD: '/activities/{activityUuid}/views/{viewUuid}/fields/{fieldUuid}'
     }
 
     public static parse(): void {
@@ -72,6 +74,15 @@ export class ConfigService {
     public static async axiosPost<T>(route: string, data: any, config?: AxiosRequestConfig): Promise<T> {
         try {
             const response = await this.getAxios().post<T>(route, data, config);
+            return response.data;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    public static async axiosPut<T>(route: string, data: any, config?: AxiosRequestConfig): Promise<T> {
+        try {
+            const response = await this.getAxios().put<T>(route, data, config);
             return response.data;
         } catch (error) {
             throw error;

@@ -1,18 +1,27 @@
 import { TestBedAdapter, Logger, IAdapterMessage, ProduceRequest, ITestBedOptions } from 'node-test-bed-adapter';
+import { ITestBedMessageHandler } from './ITestBedMessageHandler';
+import { LogHandler } from './LogHandler';
+import { CapHandler } from './CapHandler';
 
 const log = Logger.instance;
 
 export class DriverTestBedAdapter {
   private id = 'lcms-testbed-adapter';
   private adapter: TestBedAdapter;
+  private messageHandlers: Record<string, ITestBedMessageHandler> = {};
 
   constructor(testbedOptions?: ITestBedOptions) {
+    this.registerMessageHandlers();
     this.adapter = new TestBedAdapter(testbedOptions);
     this.adapter.on('ready', () => {
       this.subscribe();
       log.info('LCMS-adapter is connected to the test-bed');
     });
     this.adapter.connect();
+  }
+
+  public getId() {
+    return this.id;
   }
 
   private subscribe() {
@@ -23,18 +32,19 @@ export class DriverTestBedAdapter {
     });
   }
 
+  private registerMessageHandlers() {
+    const logHandler = new LogHandler(this.id);
+    const capHandler = new CapHandler(this.id);
+    this.messageHandlers['system_heartbeat'] = logHandler;
+    this.messageHandlers['standard_cap'] = capHandler;
+  }
+
+
   private handleMessage(message: IAdapterMessage) {
-    const stringify = (m: string | Object) => (typeof m === 'string' ? m : JSON.stringify(m, null, 2));
-    switch (message.topic.toLowerCase()) {
-      case 'system_heartbeat':
-        log.info(`Received heartbeat message with key ${stringify(message.key)}: ${stringify(message.value)}`);
-        break;
-      case 'standard_cap':
-        log.info(`Received CAP message with key ${stringify(message.key)}: ${stringify(message.value)}`);
-        break;
-      default:
-        log.info(`Received ${message.topic} message with key ${stringify(message.key)}: ${stringify(message.value)}`);
-        break;
+    if (this.messageHandlers.hasOwnProperty((message.topic.toLowerCase()))) {
+      this.messageHandlers[message.topic.toLowerCase()].handleMessage(message);
+    } else {
+      log.warn(`Received unhandled ${message.topic} message.`);
     }
   }
 

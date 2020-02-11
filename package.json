@@ -1,19 +1,19 @@
 {
-  "name": "lcms-test-bed-adapter",
+  "name": "lcms-test-bed-connector",
   "version": "0.0.1",
-  "description": "NodeJS server tool to connect the DRIVER+ Test-Bed to the LCMS (Landelijk Crisis Management Systeem) through the LCMS-API.",
+  "description": "NodeJS tool to connect the DRIVER+ Test-Bed to the LCMS (Landelijk Crisis Management Systeem) through the LCMS-API.",
   "main": "dist/run.js",
   "typings": "dist/run.d.ts",
   "scripts": {
     "start": "node dist/run.js",
     "build": "tsc",
-    "build:docker": "docker build -t lcms-test-bed-adapter .",
-    "docker:tag": "docker tag lcms-test-bed-adapter drivereu/lcms-test-bed-adapter",
-    "docker:publish": "docker push drivereu/lcms-test-bed-adapter"
+    "build:docker": "docker build -t lcms-test-bed-connector .",
+    "docker:tag": "docker tag lcms-test-bed-connector drivereu/lcms-test-bed-connector",
+    "docker:publish": "docker push drivereu/lcms-test-bed-connector"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/DRIVER-EU/lcms-test-bed-adapter.git"
+    "url": "git+https://github.com/DRIVER-EU/lcms-test-bed-connector.git"
   },
   "keywords": [
     "kafka",
@@ -26,9 +26,9 @@
   "author": "Rinze Bruining <rinze.bruining@tno.nl> (http://www.tno.nl)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/DRIVER-EU/lcms-test-bed-adapter/issues"
+    "url": "https://github.com/DRIVER-EU/lcms-test-bed-connector/issues"
   },
-  "homepage": "https://github.com/DRIVER-EU/lcms-test-bed-adapter#readme",
+  "homepage": "https://github.com/DRIVER-EU/lcms-test-bed-connector#readme",
   "dependencies": {
     "axios": "^0.19.2",
     "command-line-args": "^5.1.1",
