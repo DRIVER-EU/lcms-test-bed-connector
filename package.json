@@ -9,7 +9,8 @@
     "build": "tsc",
     "build:docker": "docker build -t lcms-test-bed-connector .",
     "docker:tag": "docker tag lcms-test-bed-connector drivereu/lcms-test-bed-connector",
-    "docker:publish": "docker push drivereu/lcms-test-bed-connector"
+    "docker:publish": "docker push drivereu/lcms-test-bed-connector",
+    "generate-openapi-interfaces": "npx dtsgenerator declarations/lcms-api-schema.json -o declarations/lcms-api-schema.d.ts -n \"\""
   },
   "repository": {
     "type": "git",
@@ -39,7 +40,7 @@
   },
   "devDependencies": {
     "@types/geojson": "^7946.0.7",
-    "@types/node": "^13.7.0",
-    "typescript": "3.7.5"
+    "@types/node": "^13.9.1",
+    "typescript": "3.8.3"
   }
 }

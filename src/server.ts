@@ -6,9 +6,6 @@ import { LcmsAdapter } from './lcms/LcmsAdapter';
 const log = console.log;
 const error = console.error;
 
-const LCMS_HEARTBEAT_MS = 30000;
-const LCMS_AUTO_UPDATE_MS = 60000;
-
 export class Server {
 
     private adapter: DriverTestBedAdapter;

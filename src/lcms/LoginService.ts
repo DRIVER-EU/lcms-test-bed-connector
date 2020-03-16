@@ -74,7 +74,7 @@ export class LoginService {
     }
 
     private scheduleTokenRefresh() {
-        const expirationMillis = +((this.activeToken?.accessToken.expiresIn || 1200) - 10) * 1000;
+        const expirationMillis = (+(this.activeToken?.accessToken.expiresIn || 1200) - 10) * 1000;
         log(`Schedule token refresh in ${expirationMillis / 1000} seconds.`);
         setTimeout(async () => {
             log(`Refreshing token...`);

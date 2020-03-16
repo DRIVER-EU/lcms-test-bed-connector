@@ -29,9 +29,40 @@ export class LcmsAdapter {
             const activeActivity = await this.findActivity();
             log(`Selected activity ${activeActivity.name}`);
             this.activityService.setActivity(activeActivity);
+            this.scheduleAutoRefresh();
+            this.updateLCMStoTestbed();
         } catch (e) {
             console.error(e.message);
             console.error(`Could not login to LCMS: ${e.stack}`);
+        }
+    }
+
+    private scheduleAutoRefresh() {
+        if (!ConfigService.getConfig().lcms.refreshTime || +ConfigService.getConfig().lcms.refreshTime <= 0) {
+            log(`Auto-updating LCMS to Test-bed disabled! Use the 'refresh' parameter to set a scheduled update.`);
+            return;
+        }
+        const refreshInterval = ConfigService.getConfig().lcms.refreshTime * 1000;
+        log(`Schedule LCMS refresh in ${refreshInterval / 1000} seconds.`);
+        setTimeout(() => {
+            this.updateLCMStoTestbed();
+        }, refreshInterval);
+    }
+
+    private async updateLCMStoTestbed() {
+        log(`Fetching LCMS contents...`);
+        try {
+            const drawings: any = await this.activityService.getDrawings();
+            const views: any = await this.activityService.getViews();
+            log(`Drawings: ${JSON.stringify(drawings)}`);
+            log(`Views: ${JSON.stringify(views)}`);
+            this.scheduleAutoRefresh();
+        } catch (error) {
+            console.error(`Error fetching LCMS contents... Scheduling retry in 5 seconds`);
+            console.error(error.stack);
+            setTimeout(() => {
+                this.updateLCMStoTestbed();
+            }, 5000);
         }
     }
 
@@ -51,20 +82,7 @@ export class LcmsAdapter {
     }
 
     private async getActivities(): Promise<Activity[]> {
-        let where: any = { //ActivityQuery
-            name: ConfigService.getConfig().lcms.excercise,
-            onlyOwnOrganization: false,
-            onlyNotRead: false,
-            category: 'RUNNING',
-            onlyTemplate: false
-        };
-        let order: any = { //OrderBy<PaginationColumnsActivity> = {
-            column: 'modified',
-            ascending: true
-        };
-        let skip: number = 0;
-        let limit: number = 10;
-        let headers = { where: JSON.stringify(where), order: JSON.stringify(order), skip, limit, ...this.loginService.getAuthorizationHeader() };
-        return ConfigService.axiosGet<Activity[]>(ConfigService.ROUTES.ACTIVITIES, { headers: headers });
+        return this.activityService.getActivities();
     }
+
 }

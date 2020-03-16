@@ -17,8 +17,10 @@ export class ConfigService {
         PROFILES: '/profiles',
         ACTIVITIES: '/activities',
         VIEWS: '/activities/{activityUuid}/views',
+        VIEW: '/activities/{activityUuid}/views/{viewUuid}',
         FIELDS: '/activities/{activityUuid}/views/{viewUuid}/fields',
-        FIELD: '/activities/{activityUuid}/views/{viewUuid}/fields/{fieldUuid}'
+        FIELD: '/activities/{activityUuid}/views/{viewUuid}/fields/{fieldUuid}',
+        DRAWINGS: '/drawings/{activityUuid}'
     }
 
     public static parse(): void {

@@ -3,7 +3,7 @@ import { BaseHandler } from './BaseHandler';
 import { stringify } from '../util';
 import { ActivityService } from '../lcms/ActivityService';
 import { ICAPAlert, ISender, ICAPArea, IValueNamePair } from '../models/cap';
-import { FieldUpsertDto } from 'declarations/lcms-api-schema';
+import { FieldUpsertDto, ViewUpsertDto, View, ViewHeader } from 'declarations/lcms-api-schema';
 
 const log = Logger.instance;
 
@@ -108,21 +108,39 @@ export class CapHandler extends BaseHandler {
     private async sendToLCMS(tab: string, contents: FieldUpsertDto[]) {
         log.info(`Sending ${contents.length} contents to LCMS`);
         const views = await this.activityService.getViews();
-        const view = views.find(v => v.screenTitle.toLocaleUpperCase() === tab);
+        let view = views.find(v => v.screenTitle.toLocaleUpperCase() === tab.toLocaleUpperCase());
         if (!view) {
-            return log.warn(`View ${tab} not found`);
+            log.info(`Creating view ${tab}`);
+            view = await this.createView(tab);
+        }
+        if (!view) {
+            return;
         }
         const fields = await this.activityService.getFieldsByViewId(view.uuid);
         contents.forEach(async (content: FieldUpsertDto) => {
             let field = fields.find(f => f.screenTitle.toLocaleUpperCase() === content.title.toLocaleUpperCase());
             if (!field) {
                 log.info(`Creating field ${content.title}`);
-                field = await this.activityService.createField(view.uuid, content);
+                field = await this.activityService.createField(view!.uuid, content);
             } else {
                 log.info(`Updating field ${content.title}`);
-                field = await this.activityService.updateField(view.uuid, field.uuid, content);
+                field = await this.activityService.updateField(view!.uuid, field.uuid, content);
             }
         });
+    }
+
+    private async createView(title: string) {
+        const input = {} as ViewUpsertDto;
+        const view = await this.activityService.getViewByName('politiezorg');
+        if (!view) {
+            log.warn(`No view found with name ${'politiezorg'}`);
+            return;
+        }
+        input.screenTitle = title;
+        input.category = "EXTERNAL";
+        input.header = JSON.stringify(view.header) as any as ViewHeader;
+        input.visible = true;
+        return this.activityService.createView(input);
     }
 
 
