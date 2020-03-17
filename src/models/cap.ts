@@ -68,7 +68,8 @@ export function createDefaultCAPMessage(senderId: string): ICAPAlert {
             urgency: 'Immediate',
             severity: 'Severe',
             certainty: 'Observed',
-            headline: 'Headline'
+            headline: 'Headline',
+            area: { areaDesc: '' }
         }
     };
     return alertMsg;

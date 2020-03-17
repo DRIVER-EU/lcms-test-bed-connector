@@ -36,11 +36,15 @@
     "dotenv": "^8.2.0",
     "jsonwebtoken": "^8.5.1",
     "node-test-bed-adapter": "^0.8.10",
+    "proj4": "^2.6.0",
+    "request": "^2.88.2",
     "yn": "^4.0.0"
   },
   "devDependencies": {
     "@types/geojson": "^7946.0.7",
     "@types/node": "^13.9.1",
+    "@types/proj4": "^2.5.0",
+    "@types/request": "^2.48.4",
     "typescript": "3.8.3"
   }
 }

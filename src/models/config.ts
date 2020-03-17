@@ -1,4 +1,4 @@
-import {ITestBedOptions} from 'node-test-bed-adapter';
+import { ITestBedOptions } from 'node-test-bed-adapter';
 
 /**
  * Configuration file
@@ -100,16 +100,15 @@ export interface IConfig {
       key?: string;
     };
   };
-  kafka?: {
-    zookeeperUrl: string;
-    clientID: string;
-    topicPrefix: string;
-    testbedOptions?: ITestBedOptions;
-    plotTopic: string;
-    capTopic: string;
-  };
+  kafka?: IKafkaConfig;
   folder?: {
     data: string;
     images: string;
   };
 }
+
+export interface IKafkaConfig {
+  testbedOptions?: ITestBedOptions;
+  plotTopic: string;
+  capTopic: string;
+};

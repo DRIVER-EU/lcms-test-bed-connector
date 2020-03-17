@@ -1,8 +1,10 @@
 import { ConfigService } from "../ConfigService";
 import { LoginService } from "./LoginService";
 import { ActivityService } from "./ActivityService";
-import { Activity, View, Drawing } from "../../declarations/lcms-api-schema";
+import { Activity, View, Drawing, Field } from "../../declarations/lcms-api-schema";
 import { InitStartService } from "./InitStartService";
+import { DriverTestBedAdapter } from "../testbed/index";
+import { createDefaultCAPMessage, ICAPAlert, drawingsToGeoJSONCollection } from "../models/index";
 
 const log = console.log;
 
@@ -11,11 +13,13 @@ export class LcmsAdapter implements InitStartService {
     private static instance: LcmsAdapter;
     private loginService: LoginService;
     private activityService: ActivityService;
+    private testbed: DriverTestBedAdapter;
     private _intitialized: boolean = false;
 
     private constructor() {
         this.loginService = LoginService.getInstance();
         this.activityService = ActivityService.getInstance();
+        this.testbed = DriverTestBedAdapter.getInstance();
     }
 
     public static getInstance(): LcmsAdapter {
@@ -67,10 +71,11 @@ export class LcmsAdapter implements InitStartService {
     private async updateLCMStoTestbed() {
         log(`Fetching LCMS contents...`);
         try {
-            const drawings: Drawing[] = await this.activityService.getDrawings();
             const views: View[] = await this.activityService.getViews();
-            log(`Drawings: ${JSON.stringify(drawings)}`);
-            log(`Got ${views.length} views: ${views.map(v => v.name).join(', ')}`);
+            const viewNamesToUpdate = (ConfigService.getConfig().lcms.consumeDisciplines || []).map(d => d.toLocaleLowerCase());
+            this.sendViewsToTestbed(views.filter(v => viewNamesToUpdate.indexOf(v.screenTitle.toLocaleLowerCase()) >= 0));
+            const drawings: { drawings: Drawing[] } = await this.activityService.getDrawings();
+            this.sendDrawingsToTestbed(drawings.drawings);
             this.scheduleAutoRefresh();
         } catch (error) {
             console.error(`Error fetching LCMS contents... Scheduling retry in 5 seconds`);
@@ -79,6 +84,26 @@ export class LcmsAdapter implements InitStartService {
                 this.updateLCMStoTestbed();
             }, 5000);
         }
+    }
+
+    private async sendViewsToTestbed(views: View[]) {
+        const capAlerts: ICAPAlert[] = [];
+        while (views.length > 0) {
+            const v = views.shift()!;
+            const fields = await this.activityService.getFieldsByViewId(v.uuid);
+            const mergedFields = fields.reduce((result: string, curr: Field) => `${result}<h3>${curr.screenTitle}</h3><br>${curr.contents}<br><br>`, '');
+            const capMsg = createDefaultCAPMessage(ConfigService.getKafkaConfig().testbedOptions ? ConfigService.getKafkaConfig().testbedOptions!.clientId || 'lcms-adapter' : 'lcms-adapter');
+            capMsg.info.headline = v.screenTitle;
+            capMsg.info.parameter = { valueName: 'LCMS-content', value: mergedFields };
+            capAlerts.push(capMsg);
+        }
+        this.testbed.sendCAPMessage(capAlerts);
+    }
+
+    private async sendDrawingsToTestbed(drawings: Drawing[]) {
+        const collection = drawingsToGeoJSONCollection(drawings);
+
+        //TODO
     }
 
     private async findActivity(): Promise<Activity> {

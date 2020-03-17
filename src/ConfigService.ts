@@ -1,7 +1,7 @@
 import * as yn from 'yn';
 import * as fs from 'fs';
 import * as path from 'path';
-import { IConfig } from "./models/config";
+import { IConfig, IKafkaConfig } from "./models/config";
 import { ICommandLineOptions } from './cli';
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 
@@ -91,11 +91,11 @@ export class ConfigService {
         }
     }
 
-    public static getKafkaConfig() {
-        return this.config.kafka;
+    public static getKafkaConfig(): IKafkaConfig {
+        return this.config.kafka || {} as IKafkaConfig;
     }
 
-    public static getConfig() {
+    public static getConfig(): IConfig {
         return this.config;
     }
 

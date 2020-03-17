@@ -114,7 +114,7 @@ export class ActivityService {
         return ConfigService.axiosPut<View>(route, view, { headers: this.loginService.getAuthorizationHeader() });
     }
 
-    public async getDrawings(): Promise<Drawing[]> {
+    public async getDrawings(): Promise<{ drawings: Drawing[] }> {
         let route = ConfigService.ROUTES.DRAWINGS.replace('{activityUuid}', this.activeActivity?.id || '');
         return ConfigService.axiosGet(route, { headers: this.loginService.getAuthorizationHeader() });
     }
