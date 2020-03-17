@@ -1,19 +1,28 @@
 import { ConfigService } from "../ConfigService";
 import { LoginService } from "./LoginService";
 import { ActivityService } from "./ActivityService";
-import { Activity } from "../../declarations/lcms-api-schema";
+import { Activity, View, Drawing } from "../../declarations/lcms-api-schema";
+import { InitStartService } from "./InitStartService";
 
 const log = console.log;
 
-export class LcmsAdapter {
+export class LcmsAdapter implements InitStartService {
 
+    private static instance: LcmsAdapter;
     private loginService: LoginService;
     private activityService: ActivityService;
+    private _intitialized: boolean = false;
 
-    constructor() {
+    private constructor() {
         this.loginService = LoginService.getInstance();
         this.activityService = ActivityService.getInstance();
-        this.start();
+    }
+
+    public static getInstance(): LcmsAdapter {
+        if (!LcmsAdapter.instance) {
+            LcmsAdapter.instance = new LcmsAdapter();
+        }
+        return LcmsAdapter.instance;
     }
 
     /**
@@ -21,7 +30,7 @@ export class LcmsAdapter {
      * the config files and environment variables. Loads all activities and selects the 
      * configured activity, that is then passed on to the ActivityService.
      */
-    public async start() {
+    public async init(): Promise<boolean> {
         try {
             const loggedIn = await this.loginService.login();
             const whoAmI = await this.loginService.whoAmI();
@@ -29,12 +38,18 @@ export class LcmsAdapter {
             const activeActivity = await this.findActivity();
             log(`Selected activity ${activeActivity.name}`);
             this.activityService.setActivity(activeActivity);
-            this.scheduleAutoRefresh();
-            this.updateLCMStoTestbed();
+            return true;
         } catch (e) {
             console.error(e.message);
             console.error(`Could not login to LCMS: ${e.stack}`);
+            return false;
         }
+    }
+
+    public async start() {
+        log(`Fields that will be sent to the test-bed: ${ConfigService.getConfig().lcms.consumeDisciplines}`);
+        this.scheduleAutoRefresh();
+        this.updateLCMStoTestbed();
     }
 
     private scheduleAutoRefresh() {
@@ -52,10 +67,10 @@ export class LcmsAdapter {
     private async updateLCMStoTestbed() {
         log(`Fetching LCMS contents...`);
         try {
-            const drawings: any = await this.activityService.getDrawings();
-            const views: any = await this.activityService.getViews();
+            const drawings: Drawing[] = await this.activityService.getDrawings();
+            const views: View[] = await this.activityService.getViews();
             log(`Drawings: ${JSON.stringify(drawings)}`);
-            log(`Views: ${JSON.stringify(views)}`);
+            log(`Got ${views.length} views: ${views.map(v => v.name).join(', ')}`);
             this.scheduleAutoRefresh();
         } catch (error) {
             console.error(`Error fetching LCMS contents... Scheduling retry in 5 seconds`);

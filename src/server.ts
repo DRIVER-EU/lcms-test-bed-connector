@@ -8,9 +8,6 @@ const error = console.error;
 
 export class Server {
 
-    private adapter: DriverTestBedAdapter;
-    private LCMS: LcmsAdapter;
-
     constructor(options?: ICommandLineOptions) {
         log('Starting...');
         process.on('SIGINT', () => {
@@ -18,8 +15,22 @@ export class Server {
         });
         ConfigService.parse();
         ConfigService.updateConfig(options);
-        this.adapter = new DriverTestBedAdapter(ConfigService.getKafkaConfig()?.testbedOptions);
-        this.LCMS = new LcmsAdapter();
+        this.startServices();
     }
 
+    private async startServices() {
+        const adapter = DriverTestBedAdapter.getInstance();
+        const lcms = LcmsAdapter.getInstance();
+        const inits: Promise<boolean>[] = [];
+        inits.push(lcms.init());
+        inits.push(adapter.init(ConfigService.getKafkaConfig()?.testbedOptions));
+        try {
+            const initialized = await Promise.all(inits);
+            lcms.start();
+            adapter.start();
+            log(`Started lcms and test-bed services`);
+        } catch (error) {
+            log(`Error starting service: ${error}`);
+        }
+    }
 }

@@ -1,5 +1,5 @@
 import { ConfigService } from "../ConfigService";
-import { Activity, View, Field, FieldUpsertDto, ViewUpsertDto, XHeadersActivities } from "declarations/lcms-api-schema";
+import { Activity, View, Field, FieldUpsertDto, ViewUpsertDto, XHeadersActivities, Drawing, ViewHeader } from "declarations/lcms-api-schema";
 import { LoginService } from "./LoginService";
 
 const log = console.log;
@@ -29,9 +29,14 @@ export class ActivityService {
     }
 
     private async loadViews(): Promise<View[]> {
-        this.views = await this.getViews();
-        log(`Got ${this.views.length} views: ${this.views.map(v => v.name).join(', ')}`);
-        return this.views;
+        try {
+            this.views = await this.getViews();
+            log(`Got ${this.views.length} views: ${this.views.map(v => v.name).join(', ')}`);
+            return this.views;
+        } catch (err) {
+            log(`Error loading views: ${err}`);
+            return [];
+        }
     }
 
     public async getViews(): Promise<View[]> {
@@ -40,16 +45,37 @@ export class ActivityService {
     }
 
     public async getViewByName(viewName: string): Promise<View | undefined> {
-        await this.loadViews();
-        return this.views.find(v => v.screenTitle.toLocaleUpperCase() === viewName.toLocaleUpperCase());
+        try {
+            await this.loadViews();
+            return this.views.find(v => v.screenTitle.toLocaleUpperCase() === viewName.toLocaleUpperCase());
+        } catch (err) {
+            log(`Error loading views: ${err}`);
+            return;
+        }
+    }
+
+    public async getViewHeaderByName(viewHeaderName: string): Promise<ViewHeader | undefined> {
+        try {
+            await this.loadViews();
+            const view = this.views.find(v => v.header.name.toLocaleUpperCase() === viewHeaderName.toLocaleUpperCase());
+            return view ? view.header : undefined;
+        } catch (err) {
+            log(`Error loading views: ${err}`);
+            return;
+        }
     }
 
     public async getFieldsByViewName(viewName: string): Promise<Field[]> {
-        const view = await this.getViewByName(viewName);
-        if (!view) return [];
-        let route = ConfigService.ROUTES.FIELDS.replace('{activityUuid}', this.activeActivity?.id || '').replace('{viewUuid}', view.uuid);
-        console.log(route);
-        return ConfigService.axiosGet(route, { headers: this.loginService.getAuthorizationHeader() });
+        try {
+            const view = await this.getViewByName(viewName);
+            if (!view) return [];
+            let route = ConfigService.ROUTES.FIELDS.replace('{activityUuid}', this.activeActivity?.id || '').replace('{viewUuid}', view.uuid);
+            console.log(route);
+            return ConfigService.axiosGet(route, { headers: this.loginService.getAuthorizationHeader() });
+        } catch (err) {
+            log(`Error getting fields of view ${viewName}: ${err}`);
+            return [];
+        }
     }
 
     public async getFieldsByViewId(viewUuid: string): Promise<Field[]> {
@@ -58,9 +84,14 @@ export class ActivityService {
     }
 
     private async loadFieldsById(viewUuid: string): Promise<Field[]> {
-        this.fields = await this.getFieldsByViewId(viewUuid);
-        log(`Got ${this.fields.length} fields: ${this.fields.map(v => v.screenTitle).join(', ')}`);
-        return this.fields;
+        try {
+            this.fields = await this.getFieldsByViewId(viewUuid);
+            log(`Got ${this.fields.length} fields: ${this.fields.map(v => v.screenTitle).join(', ')}`);
+            return this.fields;
+        } catch (err) {
+            log(`Error getting fields of view ${viewUuid}: ${err}`);
+            return [];
+        }
     }
 
     public createField(viewUuid: string, field: FieldUpsertDto): Promise<Field> {
@@ -83,13 +114,13 @@ export class ActivityService {
         return ConfigService.axiosPut<View>(route, view, { headers: this.loginService.getAuthorizationHeader() });
     }
 
-    public async getDrawings() {
+    public async getDrawings(): Promise<Drawing[]> {
         let route = ConfigService.ROUTES.DRAWINGS.replace('{activityUuid}', this.activeActivity?.id || '');
-        return await ConfigService.axiosGet(route, { headers: this.loginService.getAuthorizationHeader() });
+        return ConfigService.axiosGet(route, { headers: this.loginService.getAuthorizationHeader() });
     }
 
     public async getActivities(): Promise<Activity[]> {
-        let where: XHeadersActivities = { 
+        let where: XHeadersActivities = {
             "x-where-name": ConfigService.getConfig().lcms.excercise,
             "x-where-only-own-organization": 'false',
             "x-where-only-not-read": 'false',

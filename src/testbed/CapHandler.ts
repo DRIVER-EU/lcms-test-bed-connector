@@ -3,7 +3,7 @@ import { BaseHandler } from './BaseHandler';
 import { stringify } from '../util';
 import { ActivityService } from '../lcms/ActivityService';
 import { ICAPAlert, ISender, ICAPArea, IValueNamePair } from '../models/cap';
-import { FieldUpsertDto, ViewUpsertDto, View, ViewHeader } from 'declarations/lcms-api-schema';
+import { FieldUpsertDto, ViewUpsertDto, ViewHeader, View } from 'declarations/lcms-api-schema';
 
 const log = Logger.instance;
 
@@ -107,39 +107,55 @@ export class CapHandler extends BaseHandler {
 
     private async sendToLCMS(tab: string, contents: FieldUpsertDto[]) {
         log.info(`Sending ${contents.length} contents to LCMS`);
-        const views = await this.activityService.getViews();
-        let view = views.find(v => v.screenTitle.toLocaleUpperCase() === tab.toLocaleUpperCase());
-        if (!view) {
-            log.info(`Creating view ${tab}`);
-            view = await this.createView(tab);
+        try {
+            const view = await this.assertView(tab);
+            if (!view) return;
+            const fields = await this.activityService.getFieldsByViewId(view.uuid);
+            contents.forEach(async (content: FieldUpsertDto) => {
+                let field = fields.find(f => f.screenTitle.toLocaleUpperCase() === content.title.toLocaleUpperCase());
+                if (!field) {
+                    log.info(`Creating field ${content.title}`);
+                    field = await this.activityService.createField(view!.uuid, content);
+                } else {
+                    log.info(`Updating field ${content.title}`);
+                    field = await this.activityService.updateField(view!.uuid, field.uuid, content);
+                }
+            });
+        } catch (err) {
+            log.warn(`Could not send LCMS message to ${tab}: ${err}`);
         }
-        if (!view) {
-            return;
-        }
-        const fields = await this.activityService.getFieldsByViewId(view.uuid);
-        contents.forEach(async (content: FieldUpsertDto) => {
-            let field = fields.find(f => f.screenTitle.toLocaleUpperCase() === content.title.toLocaleUpperCase());
-            if (!field) {
-                log.info(`Creating field ${content.title}`);
-                field = await this.activityService.createField(view!.uuid, content);
-            } else {
-                log.info(`Updating field ${content.title}`);
-                field = await this.activityService.updateField(view!.uuid, field.uuid, content);
+    }
+
+    private async assertView(tab: string): Promise<View | undefined> {
+        try {
+            const views = await this.activityService.getViews();
+            let view = views.find(v => v.screenTitle.toLocaleUpperCase() === tab.toLocaleUpperCase());
+            if (!view) {
+                log.info(`Creating view ${tab}`);
+                view = await this.createView(tab);
             }
-        });
+            return view;
+        } catch (err) {
+            log.warn(`Could not find nor create view ${tab}`);
+            log.warn(err);
+        }
+        return undefined;
     }
 
     private async createView(title: string) {
+        // We need to get the header id of monodisciplines
+        const VIEW_HEADER = 'monodisciplines';
         const input = {} as ViewUpsertDto;
-        const view = await this.activityService.getViewByName('politiezorg');
-        if (!view) {
-            log.warn(`No view found with name ${'politiezorg'}`);
+        const viewHeader = await this.activityService.getViewHeaderByName(VIEW_HEADER);
+        if (!viewHeader) {
+            log.warn(`No view found with name ${VIEW_HEADER}`);
             return;
         }
         input.screenTitle = title;
-        input.category = "EXTERNAL";
-        input.header = JSON.stringify(view.header) as any as ViewHeader;
+        input.category = "REGULAR";
+        input.header = viewHeader;
         input.visible = true;
+        log.info(JSON.stringify(input));
         return this.activityService.createView(input);
     }
 
