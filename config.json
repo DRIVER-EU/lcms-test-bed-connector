@@ -37,7 +37,8 @@
       "produce": [
         "standard_cap",
         "system_timing",
-        "system_topic_access_invite"
+        "system_topic_access_invite",
+        "lcms_plots"
       ],
       "_produce": [
         "lcms_plots"
@@ -53,7 +54,7 @@
         "logFile": "log.txt"
       }
     },
-    "logTopic": "lcms_plots",
+    "plotTopic": "lcms_plots",
     "capTopic": "standard_cap"
   },
   "folder": {

@@ -1,6 +1,7 @@
 import { Drawing } from "declarations/lcms-api-schema";
 import { INamedGeoJSON } from ".";
 import { Part } from "./lcms";
+import { LcmsDrawing } from "./lcms-drawing";
 
 export interface DrawingObject {
     drawing: DrawingType,
@@ -15,7 +16,8 @@ export interface DrawingType {
 export const drawingsToGeoJSONCollection = (drawings: Drawing[]) => {
     let col: { [key: string]: INamedGeoJSON } = {};
     drawings.forEach((d: DrawingType, drawingIndex: number) => {
-        let drawingCollection = drawingToGeoJSONCollection(d.drawing, drawingIndex + 1);
+        const drawing: LcmsDrawing = LcmsDrawing.fromObject(d.drawing);
+        const drawingCollection = drawingToGeoJSONCollection(drawing, drawingIndex + 1);
         col = Object.assign(col, drawingCollection);
     });
     return col;
@@ -39,25 +41,26 @@ export const drawingToGeoJSONCollection = (drawing: DrawingType, drawingIndex: n
         col[layerTitle] = geoJson;
         let features = geoJson.geojson.features;
         tl.actionLayers.forEach((al: any) => {
-            if (!al.elements) return;
-            al.elements.forEach((el: any) => {
-                if (el instanceof Part && el.children) {
-                    el.children.forEach(c => {
-                        if (c instanceof Part && c.children) {
-                            c.children.forEach((cc: any) => {
-                                let feature = cc.toGeoJSONFeature();
+            if (al.elements && al.elements.length > 0) {
+                al.elements.forEach((el: any) => {
+                    if (el instanceof Part && el.children) {
+                        el.children.forEach(c => {
+                            if (c instanceof Part && c.children) {
+                                c.children.forEach((cc: any) => {
+                                    let feature = cc.toGeoJSONFeature();
+                                    if (feature) features.push(feature);
+                                });
+                            } else {
+                                let feature = c.toGeoJSONFeature();
                                 if (feature) features.push(feature);
-                            });
-                        } else {
-                            let feature = c.toGeoJSONFeature();
-                            if (feature) features.push(feature);
-                        }
-                    });
-                } else {
-                    let feature = el.toGeoJSONFeature();
-                    if (feature) features.push(feature);
-                }
-            });
+                            }
+                        });
+                    } else {
+                        let feature = el.toGeoJSONFeature();
+                        if (feature) features.push(feature);
+                    }
+                });
+            }
         });
     });
     console.log(JSON.stringify(col));

@@ -102,8 +102,7 @@ export class LcmsAdapter implements InitStartService {
 
     private async sendDrawingsToTestbed(drawings: Drawing[]) {
         const collection = drawingsToGeoJSONCollection(drawings);
-
-        //TODO
+        this.testbed.sendGeojsonMessage(collection);
     }
 
     private async findActivity(): Promise<Activity> {

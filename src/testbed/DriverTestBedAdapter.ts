@@ -102,12 +102,32 @@ export class DriverTestBedAdapter implements InitStartService {
     });
     if (payloads.length > 0) {
       log.info(`Sending ${payloads.length} payloads to kafka`);
-      this.sendCap(payloads);
+      this.sendPayloads(payloads);
+    }
+  }
+
+  public sendGeojsonMessage(collection: { [key: string]: INamedGeoJSON }) {
+    const payloads: ProduceRequest[] = [];
+    for (const key in collection) {
+      if (collection.hasOwnProperty(key)) {
+        const layer = collection[key];
+        if (this.hasChanged(key, layer)) {
+          console.log(`Sending changed GeoLayer-content: ${key}`);
+          const payload = this.createProduceRequest(ConfigService.getKafkaConfig().plotTopic, layer);
+          if (payload) payloads.push(payload);
+        } else {
+          console.log(`Skipping unchanged GeoLayer-content: ${key}`);
+        }
+      }
+    }
+    if (payloads.length > 0) {
+      log.info(`Sending ${payloads.length} payloads to kafka`);
+      this.sendPayloads(payloads);
     }
   }
 
   /** Will only work if you are authorized to send CAP messages. */
-  private sendCap(payloads: ProduceRequest[]) {
+  private sendPayloads(payloads: ProduceRequest[]) {
     if (!this.adapter) return log.warn(`Cannot find a testbed adapter to send the payload!`);
     this.adapter.send(payloads, (error, data) => {
       if (error) {
