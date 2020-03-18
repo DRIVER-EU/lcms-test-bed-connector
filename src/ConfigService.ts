@@ -51,6 +51,10 @@ export class ConfigService {
         this.config.lcms.serverAddress = process.env.LCMS_CONNECTOR_SERVER_ADDRESS || options.serverAddress;
         this.config.lcms.serverId = process.env.LCMS_CONNECTOR_SERVER_ID || options.serverId;
         this.config.lcms.refreshTime = +(process.env.LCMS_CONNECTOR_REFRESH_TIME_S || options.refresh);
+        if (this.config.kafka && this.config.kafka.testbedOptions) {
+            this.config.kafka.testbedOptions.kafkaHost = process.env.KAFKA_BROKER_URL || this.config.kafka.testbedOptions.kafkaHost;
+            this.config.kafka.testbedOptions.schemaRegistry = process.env.SCHEMA_REGISTRY_URL || this.config.kafka.testbedOptions.schemaRegistry;
+        }
         console.log('Configuration updated with ENV variables');
         return;
     }

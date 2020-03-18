@@ -68,3 +68,4 @@ certs
 log.txt
 local/*.*
 icons/
+lcms2.code-workspace
