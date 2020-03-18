@@ -146,7 +146,7 @@ export class AElement {
         this.UUID = obj.id!;
         this.attributes = {};
         obj.attributes!.forEach(attr => {
-            let values = {} as {[key: string]: any};
+            let values = {} as { [key: string]: any };
             attr.attributeItems.forEach(item => {
                 if (item.type === 6 && item.attributeValue && item.attributeValue.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')) {
                     values[item.name] = item.attributeValue;
@@ -186,7 +186,7 @@ export class AElement {
 
     protected async downloadFile(filename: string, url: string) {
         let file = fs.createWriteStream(filename);
-        let req = request.get(url, { encoding: null, headers: { } }, (err: any, response: any, body: any) => {
+        let req = request.get(url, { encoding: null, headers: {} }, (err: any, response: any, body: any) => {
             if (err) {
                 console.error(err);
                 file.end();
@@ -434,10 +434,11 @@ export class Part extends AElement {
 
         if (x.origin) {
             this.origin = [x.origin.x, x.origin.y];
+        } else {
+            this.origin = [];
         }
         this.childrenIds = x.children!;
         this.name = x.name!;
-        this.origin = [];
         this.children = [];
         this.pixelScale = 0;
     }
@@ -529,7 +530,7 @@ export class Symbol extends AElement {
                 transparency: 0
             };
         }
-        if (this.parent.getPixelScale()) {
+        if (this.origin.length == 0 || this.parent.getPixelScale()) {
             this.origin = parent.getOrigin();
         } else {
             // Text block?
