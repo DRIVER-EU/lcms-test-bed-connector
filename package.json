@@ -35,7 +35,7 @@
     "command-line-args": "^5.1.1",
     "dotenv": "^8.2.0",
     "jsonwebtoken": "^8.5.1",
-    "node-test-bed-adapter": "^0.8.10",
+    "node-test-bed-adapter": "^0.9.7",
     "proj4": "^2.6.0",
     "request": "^2.88.2",
     "yn": "^4.0.0"

@@ -20,7 +20,8 @@ export class CapHandler extends BaseHandler {
         if (message.key && typeof message.key === 'object' && message.key.senderID === this.senderId) {
             return; //Skip own messages
         }
-        log.info(`CapHandler received ${stringify(message.value)}`);
+        const cap: ICAPAlert = message.value as ICAPAlert;
+        log.info(`CapHandler received ${stringify({identifier: cap.identifier, sender: cap.sender, sent: cap.sent})}`);
         const msg: ICAPAlert = message.value as ICAPAlert;
         const sender: ISender | undefined = this.getSender(msg);
         if (!sender) return;
@@ -31,6 +32,9 @@ export class CapHandler extends BaseHandler {
                 break;
             case 'tmt.eu':
                 this.publishToLCMS(sender, msg);
+                break;
+            case 'lcms.nl':
+                log.info(`I am the sender myself: ${sender.organisation} - ${sender.tool}`);
                 break;
             default:
                 log.info(`Unknown sender: ${sender.organisation} - ${sender.tool}`);

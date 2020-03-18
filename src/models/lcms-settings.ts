@@ -3,7 +3,7 @@ export class Settings {
   
     private symbols: string[] = [];
   
-    constructor() {
+    private constructor() {
       if (Settings.instance) {
         throw new Error('Error: Instantiation failed: Use Settings.getInstance() instead of new.');
       }
@@ -14,7 +14,7 @@ export class Settings {
       return Settings.instance;
     }
   
-    public imageFolder: string = '';
+    public imageFolder: string = 'icons';
   
     public symbolExists(symbol: string) {
       return this.symbols.indexOf(symbol) >= 0;

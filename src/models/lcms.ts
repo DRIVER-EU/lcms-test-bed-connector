@@ -189,6 +189,7 @@ export class AElement {
         let req = request.get(url, { encoding: null, headers: { } }, (err: any, response: any, body: any) => {
             if (err) {
                 console.error(err);
+                file.end();
                 return;
             }
             if (response) console.log('response');
@@ -592,6 +593,7 @@ export class Symbol extends AElement {
             let symbol = this.obj.symbol!.symbolId!;
             properties['icon'] = symbol;
             if (!Symbol.settings.symbolExists(symbol)) {
+                if (!fs.existsSync(path.join(Symbol.settings.imageFolder))) fs.mkdirSync(path.join(Symbol.settings.imageFolder));
                 let filename = path.join(Symbol.settings.imageFolder, symbol);
                 fs.exists(filename, exists => {
                     Symbol.settings.addSymbol(symbol);

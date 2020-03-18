@@ -111,7 +111,7 @@ export class DriverTestBedAdapter implements InitStartService {
     for (const key in collection) {
       if (collection.hasOwnProperty(key)) {
         const layer = collection[key];
-        if (this.hasChanged(key, layer)) {
+        if (this.hasChanged(key, layer) && layer.geojson && layer.geojson.features.length > 0) {
           console.log(`Sending changed GeoLayer-content: ${key}`);
           const payload = this.createProduceRequest(ConfigService.getKafkaConfig().plotTopic, layer);
           if (payload) payloads.push(payload);
@@ -132,6 +132,8 @@ export class DriverTestBedAdapter implements InitStartService {
     this.adapter.send(payloads, (error, data) => {
       if (error) {
         log.error(error);
+        log.error(error.stack);
+        log.error(`Failed to send ${JSON.stringify(payloads)}`);
       }
       if (data) {
         log.info(data);
@@ -145,6 +147,7 @@ export class DriverTestBedAdapter implements InitStartService {
     log.debug(`Hashes: ${JSON.stringify(this.hashes)}`);
     if (!this.hashes.hasOwnProperty(key)) {
       // new data
+      this.hashes[key] = hashData;
       log.info(`Create hash for ${key}: ${hashData}`);
       return true;
     } else if (this.hashes[key] !== hashData) {
